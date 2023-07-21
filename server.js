@@ -47,7 +47,7 @@ app.patch("/updateTodoStatus/:id", (req, res) => {
                 const dt = allTodos.map((todo) => {
                     // console.log(typeof todo.id);
                     if(todo.id === id) {
-                        console.log("I am here");
+                        // console.log("I am here");
                         return {
                             ...todo,
                             completed: !todo.completed
@@ -76,7 +76,49 @@ app.patch("/updateTodoStatus/:id", (req, res) => {
             message: "Something wents wrong!"
         });
     }
-})
+});
+
+app.delete("/deleteTodo/:id", (req, res) => {
+    try {
+        // console.log(req.params.id);
+        const id = parseInt(req.params.id);
+        // console.log(id);
+        // console.log(typeof id);
+        fs.readFile("./data/todo.json", "utf-8", (err, data) => {
+            if(err) {
+                res.status(500).send({
+                    success: false,
+                    message: "Something wents wrong!"
+                });
+                return;
+            }
+            try {
+                const allTodos = JSON.parse(data);
+                console.log("Before",allTodos);
+                
+                const dt = allTodos.filter((todo) => todo.id !== id);
+                
+                console.log("After", dt);
+                writeFile(JSON.stringify(dt), res);
+                
+                res.status(200).send({
+                    success: true,
+                    message: `Status of Todo ${id} deleted successfully!`
+                });
+            } catch(err) {
+                res.status(500).send({
+                    success: false,
+                    message: "Something wents wrong!"
+                });
+            }
+        });
+    } catch(err) {
+        res.status(500).send({
+            success: false,
+            message: "Something wents wrong!"
+        });
+    }
+});
 
 app.get("/getAllTodos", (req, res)=> {
     fs.readFile("./data/todo.json", "utf-8", (err, data)=> {

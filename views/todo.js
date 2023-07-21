@@ -1,6 +1,7 @@
 const todoTextNode = document.getElementById("todoText");
 const tasksListNode = document.getElementById("tasksList");
 var checkboxes;
+var deleteTodoBtns;
 
 fetchAndRenderTasks();
 
@@ -14,7 +15,7 @@ function renderTasks(tasks) {
                             <p class="${task.completed? "todo-checked":""}" id="todo-text${task.id}">${task.todoText}</p>
                             <div class="actionsTodo">
                                 <input type="checkbox" name="${task.todoText}" id="${task.id}" ${task.completed? "checked":""}>
-                                <button type="button">✕</button>
+                                <button type="button" id="deleteBtn-${task.id}">✕</button>
                             </div>
                         </div>
                         <hr/>
@@ -32,7 +33,11 @@ function fetchAndRenderTasks() {
             renderTasks(data.todoList);
 
             checkboxes = document.querySelectorAll("input[type='checkbox']");
+            deleteTodoBtns = document.querySelectorAll("button[type='button']");
+
+            // console.log(deleteTodoBtns);
             addEvents();
+            addEventsForDelete();
             // console.log(checkboxes);
         } else {
             alert(data.message);
@@ -83,7 +88,6 @@ function addEvents() {
         checkbox.addEventListener("change", (e) => {
             // console.log(e);
             const currId = e.target.id;
-            const currNode = document.getElementById(currId);
             const currTextNode = document.getElementById(`todo-text${currId}`);
             if(e.target.checked) {
                 // console.log("checked now");
@@ -97,6 +101,18 @@ function addEvents() {
                 updateTodoStatus(currId);
                 currTextNode.classList.toggle("todo-checked");
             }
+        });
+    });
+}
+
+async function addEventsForDelete() {
+    deleteTodoBtns?.forEach((deleteTodoBtn) => {
+        // console.log(deleteTodoBtn);
+        deleteTodoBtn.addEventListener("click", (e) => {
+            // console.log(e);
+            const currId = e.target.id.split("-")[1];
+            // console.log(currId)
+            deleteTodo(currId);
         });
     });
 }
@@ -118,4 +134,23 @@ function updateTodoStatus(id) {
         alert(err.message);
     })
 };
+
+function deleteTodo(id) {
+    fetch(`/deleteTodo/${id}`, {
+        method: "DELETE"
+    })
+    .then((res) => res.json())
+    .then((data) => {
+        // console.log(data);
+        if(data.success) {
+            fetchAndRenderTasks();
+            // console.log("Data deteled!");
+        } else {
+            // console.log("Data not deleted!");
+        }
+    })
+    .catch((err) => {
+        alert(err.message);
+    })
+}
 
